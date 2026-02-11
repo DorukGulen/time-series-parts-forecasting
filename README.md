@@ -1,121 +1,172 @@
-# Spare Parts Demand Forecasting
+# 📈 Federated Time Series Forecasting
 
-## 📌 Project Overview
+A privacy-preserving federated learning system for time series sales
+forecasting using Flower (flwr).\
+This project trains a global forecasting model collaboratively across
+decentralized edge devices without sharing raw data.
 
-This project focuses on forecasting spare parts demand for a large-scale industrial manufacturer using time series modeling techniques.
+------------------------------------------------------------------------
 
-The objective is to:
+## 🚀 Project Overview
 
-- Predict future demand for individual spare parts
-- Improve inventory planning accuracy
-- Reduce stockouts and overstock risks
-- Analyze demand seasonality and external drivers
+This project implements a **Federated Learning (FL)** framework for
+monthly sales forecasting.
 
-The project simulates a real-world industrial forecasting environment with multiple SKUs and operational constraints.
+Instead of centralizing data, multiple clients: - Train models locally
+on private datasets - Share only model parameters with the central
+server - Contribute to a global model using the **FedAvg** aggregation
+strategy
 
----
+The system compares **IID vs Non-IID data distributions** to analyze
+convergence behavior and performance differences in federated
+environments.
 
-## 🧠 Problem Statement
+------------------------------------------------------------------------
 
-Spare parts demand is typically:
+## 🏗 System Architecture
 
-- Intermittent  
-- Highly volatile  
-- Seasonal  
-- Affected by external operational factors  
+-   **Central Server (PC/Laptop)**
+    -   Aggregates model weights
+    -   Coordinates federated rounds
+    -   Uses Flower (flwr)
+-   **Edge Clients (Raspberry Pi 5)**
+    -   Train locally on partitioned datasets
+    -   Use MLP or LSTM models
+    -   Send weight updates only
+-   **Communication**
+    -   gRPC-based Flower protocol
+    -   Same local network
 
-Traditional forecasting methods often struggle with such patterns. This project explores modern time-series techniques to handle these challenges effectively.
+Federated Loop:
 
----
+Global Model → Local Training → Weight Updates → Aggregation → New
+Global Model
 
-## 📊 Methodology
+------------------------------------------------------------------------
 
-The forecasting pipeline includes:
+## 📊 Dataset
 
-### 1️⃣ Data Preprocessing
-- Cleaning and restructuring raw order data  
-- Handling missing periods  
-- Aggregating demand at appropriate time granularity  
-- Identifying part changes and corrections  
+-   Dataset: Superstore Sales Dataset (Kaggle)
+-   \~10,000 rows
+-   Transaction-level retail data
+-   Aggregated into **monthly total sales**
 
-### 2️⃣ Material Categorization
-- Classification of parts based on demand behavior  
-- Criticality and movement-based grouping  
-- Differentiating slow-moving vs fast-moving items  
+### Time Series Construction
 
-### 3️⃣ Time Series Modeling
+-   Lookback window: 12 months
+-   Forecast horizon: 1 month
+-   Monthly aggregation (sum)
+-   Sliding window supervised learning setup
 
-Implemented models:
+------------------------------------------------------------------------
 
-- Facebook Prophet
-- Seasonality analysis
-- Single-part forecasting
-- Multi-item forecasting
+## 🔀 Data Partitioning
 
-Model components:
+### 1️⃣ IID Split
 
-- Trend detection  
-- Weekly / Monthly seasonality  
-- Holiday effects (where applicable)  
-- External regressors (exogenous variables)  
+-   Random shuffle
+-   Equal 50/50 division
+-   Balanced statistical distribution
 
----
+### 2️⃣ Non-IID Split (Value-Based)
 
-## 📈 Exogenous Variable Analysis
+-   Threshold-based split on sales
+-   Client 0 → Sales ≤ threshold
+-   Client 1 → Sales \> threshold
 
-The project includes analysis of:
+------------------------------------------------------------------------
 
-- Operational variables  
-- External demand drivers  
-- Their correlation with part consumption  
+## 🧠 Models
 
-Feature impact was evaluated to improve predictive performance.
+### 🔹 MLP (Baseline)
 
----
+-   Fully connected network
+-   Flattened input windows
 
-## 🏗️ Project Structure
-├── Data Preprocessing & Cleaning
-├── Material Categorization
-├── Criticality Analysis
-├── Exogenous Variables Analysis
-├── Prophet Single Part Forecasting
-├── Prophet Multi-Part Forecasting
-└── Seasonality Modeling
+### 🔹 LSTM (Sequence-aware)
 
----
+-   Preserves temporal structure
+-   Captures sequential dependencies
 
-## 🛠️ Technologies Used
+------------------------------------------------------------------------
 
-- Python  
-- Pandas  
-- NumPy  
-- Matplotlib  
-- Facebook Prophet  
-- Scikit-learn  
+## 📏 Evaluation Metrics
 
----
+-   MSE (Mean Squared Error)
+-   MAE (Mean Absolute Error)
+-   MAPE
+-   SMAPE
+-   R² Score
 
-## 📊 Results
+------------------------------------------------------------------------
 
-- Improved forecasting stability for intermittent demand
-- Better seasonal pattern capture
-- Enhanced visibility for inventory planning
-- Scalable forecasting framework for multiple SKUs
+## 📉 Results Summary
 
----
+### IID Scenario
 
-## 🚀 Key Takeaways
+-   Faster convergence
+-   Smoother training
+-   Lower error metrics
 
-- Intermittent spare part demand requires specialized handling  
-- Feature engineering significantly impacts forecast quality  
-- Prophet performs well when seasonality is properly tuned  
-- External variables can improve model robustness  
+### Non-IID Scenario
 
----
+-   Slower convergence
+-   More realistic federated learning setup
 
-## 🔒 Disclaimer
+> Federated learning is feasible in both settings, but IID distributions
+> converge faster.
 
-This repository contains a generalized and anonymized version of a real-world industrial forecasting project.  
-All data has been modified or simulated to ensure confidentiality.
+------------------------------------------------------------------------
 
+## 🖥 Deployment
+
+``` bash
+# Start server
+python server.py
+
+# Start client
+python client.py --server-ip <SERVER_IP>
+```
+
+------------------------------------------------------------------------
+
+## 📂 Project Structure
+
+    .
+    ├── server.py
+    ├── client.py
+    ├── dataset.py
+    ├── partition.py
+    ├── models.py
+    ├── train.py
+    ├── requirements.txt
+    └── plots/
+
+------------------------------------------------------------------------
+
+## 🔬 Key Contributions
+
+-   Federated learning implementation using Flower
+-   IID vs Non-IID comparison
+-   Time-series forecasting pipeline
+-   Edge-device deployment
+
+------------------------------------------------------------------------
+
+## 🛠 Tech Stack
+
+-   Python
+-   PyTorch
+-   Flower (flwr)
+-   Pandas
+-   NumPy
+-   Raspberry Pi 5
+
+------------------------------------------------------------------------
+
+## 📌 Future Improvements
+
+-   FedProx integration
+-   More clients
+-   Transformer-based forecasting
 
